@@ -25,17 +25,19 @@ class IO(object):
         self.file_name = file_name
         self.training_images = self.read_image_file(self.file_name)
         self.training_attribute = self.read_attribute_file(self.file_name)
-
-        self.returned_batch_count = 0
+        self.data_size = len(self.training_attribute)
         self.training_attribute_count = 0
 
         # self._pre_process_data()
 
     def read_image_file(self, file_name):
-        return h5py.File(self.training_image_path + file_name, 'r')
+        image_object = h5py.File(self.training_image_path + file_name, 'r')
+        print('=-> %s : %d images' % (self.file_name, len(image_object)))
+        return image_object
 
     def read_attribute_file(self, file_name):
         attribute_object = h5py.File(self.training_attribute_path + file_name, 'r')
+        print('=-> %s : %d attribute' % (self.file_name, len(attribute_object['attrs'])))
         return attribute_object['attrs']
 
     def next_batch(self, batch_size):
@@ -54,8 +56,18 @@ class IO(object):
                 images[data_count] = self.training_images[utc_time]
                 labels[data_count] = label_data[1]
                 data_count += 1
-                self.returned_batch_count += 1
+            self._training_attribute_count_acc()
         return [images, labels]
+
+    def _training_attribute_count_acc(self):
+        """
+        计数自增，无限循环使用
+        :return:
+        """
+        if self.training_attribute_count + 1 >= self.data_size:
+            self.training_attribute_count = 0
+        else:
+            self.training_attribute_count += 1
 
     # def _pre_process_data(self):
     #     """

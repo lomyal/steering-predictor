@@ -17,13 +17,8 @@ import tensorflow as tf
 import utils.io
 
 
-# from tensorflow.examples.tutorials.mnist import input_data
-# mnist = input_data.read_data_sets(
-#     'MNIST_data',
-#     one_hot=True)
-
 rdhckrs_train = utils.io.IO('554.h5')
-rdhckrs_test = utils.io.IO('554.h5')
+# rdhckrs_test = utils.io.IO('554.h5')
 
 
 def weight_variable(shape):
@@ -121,10 +116,9 @@ train_step = tf.train.AdamOptimizer(1e-4).minimize(mse_loss)
 # accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 sess.run(tf.global_variables_initializer())
-for i in range(20000):
-    batch = rdhckrs_train.next_batch(50)
+for i in range(2000):
+    batch = rdhckrs_train.next_batch(10)
     if i % 1 == 0:
-        print(i)
         train_loss = mse_loss.eval(feed_dict={
             x: batch[0],
             y_: batch[1],
