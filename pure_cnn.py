@@ -17,7 +17,7 @@ import tensorflow as tf
 import utils.io
 
 
-rdhckrs_train = utils.io.IO('554.h5')
+rdhckrs_train = utils.io.IO('613.h5')
 # rdhckrs_test = utils.io.IO('554.h5')
 
 
@@ -40,8 +40,6 @@ def max_pool_2x2(x):
         x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
 
-sess = tf.InteractiveSession()
-
 # 三色（RGB）图像，大小 320x320
 x = tf.placeholder(tf.float32, shape=[None, 320, 320, 3])
 # y_ = tf.placeholder(tf.float32, shape=[None, 10])
@@ -55,8 +53,8 @@ y_ = tf.placeholder(tf.float32, shape=[None, 1])
 # The first two dimensions are the patch size, the next is the number
 # of input channels, and the last is the number of output channels.
 # 三色
-W_conv1 = weight_variable([5, 5, 3, 32])
-b_conv1 = bias_variable([32])
+W_conv1 = weight_variable([5, 5, 3, 16])
+b_conv1 = bias_variable([16])
 
 # To apply the layer, we first reshape x to a 4d tensor, with the
 # second and third dimensions corresponding to image width and height,
@@ -75,8 +73,8 @@ h_pool1 = max_pool_2x2(h_conv1)
 
 # In order to build a deep network, we stack several layers of this type.
 # The second layer will have 64 features for each 5x5 patch.
-W_conv2 = weight_variable([5, 5, 32, 64])
-b_conv2 = bias_variable([64])
+W_conv2 = weight_variable([5, 5, 16, 32])
+b_conv2 = bias_variable([32])
 h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
 h_pool2 = max_pool_2x2(h_conv2)
 
@@ -86,9 +84,9 @@ h_pool2 = max_pool_2x2(h_conv2)
 # fully-connected layer with 1024 neurons to allow processing on the
 # entire image. We reshape the tensor from the pooling layer into a batch
 # of vectors, multiply by a weight matrix, add a bias, and apply a ReLU.
-W_fc1 = weight_variable([80 * 80 * 64, 1024])
-b_fc1 = bias_variable([1024])
-h_pool2_flat = tf.reshape(h_pool2, [-1, 80 * 80 * 64])
+W_fc1 = weight_variable([80 * 80 * 32, 128])
+b_fc1 = bias_variable([128])
+h_pool2_flat = tf.reshape(h_pool2, [-1, 80 * 80 * 32])
 h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
 
 # To reduce overfitting, we will apply DROPOUT before the readout layer.
@@ -104,7 +102,7 @@ h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 
 # Finally, we add a layer, just like for the one layer softmax regression
 # above.
-W_fc2 = weight_variable([1024, 1])
+W_fc2 = weight_variable([128, 1])
 b_fc2 = bias_variable([1])
 y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
 
@@ -115,10 +113,14 @@ train_step = tf.train.AdamOptimizer(1e-4).minimize(mse_loss)
 # correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
 # accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
+# sess = tf.Session()
+sess = tf.InteractiveSession()
+print('ssesion created')
 sess.run(tf.global_variables_initializer())
-for i in range(2000):
-    batch = rdhckrs_train.next_batch(10)
-    if i % 1 == 0:
+print('variables initialized')
+for i in range(100000):
+    batch = rdhckrs_train.next_batch(50)
+    if i % 100 == 0:
         train_loss = mse_loss.eval(feed_dict={
             x: batch[0],
             y_: batch[1],

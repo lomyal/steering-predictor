@@ -65,6 +65,7 @@ class IO(object):
         :return:
         """
         if self.training_attribute_count + 1 >= self.data_size:
+            print('=-> Data used up. Start over again.')
             self.training_attribute_count = 0
         else:
             self.training_attribute_count += 1
