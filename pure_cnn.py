@@ -12,6 +12,7 @@ Authors: Wang Shijun
 Date:    2017/03/07 23:00:00
 """
 
+import datetime
 import tensorflow as tf
 
 import utils.io
@@ -53,8 +54,8 @@ y_ = tf.placeholder(tf.float32, shape=[None, 1])
 # The first two dimensions are the patch size, the next is the number
 # of input channels, and the last is the number of output channels.
 # 三色
-W_conv1 = weight_variable([5, 5, 3, 16])
-b_conv1 = bias_variable([16])
+W_conv1 = weight_variable([5, 5, 3, 32])
+b_conv1 = bias_variable([32])
 
 # To apply the layer, we first reshape x to a 4d tensor, with the
 # second and third dimensions corresponding to image width and height,
@@ -73,8 +74,8 @@ h_pool1 = max_pool_2x2(h_conv1)
 
 # In order to build a deep network, we stack several layers of this type.
 # The second layer will have 64 features for each 5x5 patch.
-W_conv2 = weight_variable([5, 5, 16, 32])
-b_conv2 = bias_variable([32])
+W_conv2 = weight_variable([5, 5, 32, 64])
+b_conv2 = bias_variable([64])
 h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
 h_pool2 = max_pool_2x2(h_conv2)
 
@@ -84,9 +85,9 @@ h_pool2 = max_pool_2x2(h_conv2)
 # fully-connected layer with 1024 neurons to allow processing on the
 # entire image. We reshape the tensor from the pooling layer into a batch
 # of vectors, multiply by a weight matrix, add a bias, and apply a ReLU.
-W_fc1 = weight_variable([80 * 80 * 32, 128])
-b_fc1 = bias_variable([128])
-h_pool2_flat = tf.reshape(h_pool2, [-1, 80 * 80 * 32])
+W_fc1 = weight_variable([80 * 80 * 64, 512])
+b_fc1 = bias_variable([512])
+h_pool2_flat = tf.reshape(h_pool2, [-1, 80 * 80 * 64])
 h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
 
 # To reduce overfitting, we will apply DROPOUT before the readout layer.
@@ -102,7 +103,7 @@ h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 
 # Finally, we add a layer, just like for the one layer softmax regression
 # above.
-W_fc2 = weight_variable([128, 1])
+W_fc2 = weight_variable([512, 1])
 b_fc2 = bias_variable([1])
 y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
 
@@ -125,7 +126,8 @@ for i in range(100000):
             x: batch[0],
             y_: batch[1],
             keep_prob: 1.0})
-        print("step %d, training loss %g" % (i, train_loss))
+        date = datetime.datetime.now()
+        print("[%s] step %d, training loss %g" % (date, i, train_loss))
     train_step.run(feed_dict={
         x: batch[0], 
         y_: batch[1], 
