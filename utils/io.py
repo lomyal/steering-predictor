@@ -78,7 +78,7 @@ class IO(object):
                 self.dirty_data_count,
                 self.dirty_data_count / self.training_attribute_count * 100))
             print('=-> Dirty data (velocity): %d' % self.dirty_data_velo_count)
-            print('=-> Total data (curvature): %d' % self.dirty_data_curv_count)
+            print('=-> Dirty data (curvature): %d' % self.dirty_data_curv_count)
             self.training_attribute_count = 0
             self.dirty_data_count = 0
             self.dirty_data_velo_count = 0
