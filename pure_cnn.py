@@ -18,8 +18,8 @@ import tensorflow as tf
 import utils.io
 
 
-rdhckrs_train = utils.io.IO('613.h5')
-# rdhckrs_test = utils.io.IO('554.h5')
+rdhckrs_train = utils.io.IO('660.h5')
+rdhckrs_test = utils.io.IO('701.h5').get_all_data()
 
 
 def weight_variable(shape):
@@ -116,24 +116,31 @@ train_step = tf.train.AdamOptimizer(1e-4).minimize(mse_loss)
 
 # sess = tf.Session()
 sess = tf.InteractiveSession()
-print('ssesion created')
+print('session created')
 sess.run(tf.global_variables_initializer())
 print('variables initialized')
-for i in range(100000):
+for i in range(2000):
     batch = rdhckrs_train.next_batch(50)
     if i % 100 == 0:
         train_loss = mse_loss.eval(feed_dict={
-            x: batch[0],
-            y_: batch[1],
+            x: batch['images'],
+            y_: batch['labels'],
             keep_prob: 1.0})
         date = datetime.datetime.now()
         print("[%s] step %d, training loss %g" % (date, i, train_loss))
     train_step.run(feed_dict={
-        x: batch[0], 
-        y_: batch[1], 
+        x: batch['images'],
+        y_: batch['labels'],
         keep_prob: 0.5})
 
 # print("test accuracy %g" % accuracy.eval(feed_dict={
 #     x: rdhckrs_test.images,
 #     y_: rdhckrs_test.labels,
 #     keep_prob: 1.0}))
+
+
+print("test error %g" % mse_loss.eval(feed_dict={
+    x: rdhckrs_test['images'],
+    y_: rdhckrs_test['labels'],
+    keep_prob: 1.0}))
+

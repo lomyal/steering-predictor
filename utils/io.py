@@ -45,10 +45,11 @@ class IO(object):
         print('=-> %s : %d attribute' % (self.file_name, len(attribute_object['attrs'])))
         return attribute_object['attrs']
 
-    def next_batch(self, batch_size):
+    def next_batch(self, batch_size, discard_dirty_data=True):
         """
         返回下一块数据
         :param batch_size:
+        :param discard_dirty_data:
         :return:
         """
         images = np.ndarray(shape=(batch_size, 320, 320, 3,))
@@ -56,7 +57,7 @@ class IO(object):
         data_count = 0
         while data_count < batch_size:
             label_data = self.training_attribute[self.training_attribute_count]
-            if self._is_dirty_data(label_data):
+            if discard_dirty_data and self._is_dirty_data(label_data):
                 continue
             utc_time = "{0:.3f}".format(label_data[0])
             if utc_time in self.training_images:
@@ -64,7 +65,10 @@ class IO(object):
                 labels[data_count] = label_data[4]  # 第 0.125 秒后的曲率
                 data_count += 1
             self._training_attribute_count_acc()
-        return [images, labels]
+        return {
+            'images': images,
+            'labels': labels,
+        }
 
     def _training_attribute_count_acc(self):
         """
@@ -109,9 +113,10 @@ class IO(object):
         else:
             return False
 
-    # def _pre_process_data(self):
-    #     """
-    #     将原始数据组装成
-    #     :return:
-    #     """
-    #     pass
+    def get_all_data(self):
+        """
+        返回全部数据（用于测试）
+        :return:
+        """
+        return self.next_batch(self.data_size, discard_dirty_data=False)
+
